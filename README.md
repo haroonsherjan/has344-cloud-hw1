@@ -1,6 +1,6 @@
 # Chatbot Concierge #
 
-#S3 Link
+## S3 Static Website ##
 http://has344-hw1.s3-website-us-east-1.amazonaws.com/
 
 ## About ##
