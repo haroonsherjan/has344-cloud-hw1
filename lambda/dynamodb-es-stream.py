@@ -3,7 +3,7 @@ from requests_aws4auth import AWS4Auth
 import boto3
 import json
 
-host = 'search-elastic-yelp-final-hunkmkikl3kafz5esv3cu6v5tu.us-east-1.es.amazonaws.com'
+host = 'search-elastic-yelp-final-hunkmkikl3kafz5esv3cu6v5tu.us-east-1.es.amazonaws.com'  # For example, my-test-domain.us-east-1.es.amazonaws.com
 region = 'us-east-1'  # e.g. us-west-1
 
 service = 'es'
@@ -23,11 +23,12 @@ def lambda_handler(event, context):
     print(event)
 
     for entry in event['Records']:
-        if entry['eventName'] == 'INSERT':
+        if entry['eventName'] == 'INSERT' or entry['eventName'] == 'MODIFY':
             entry = entry['dynamodb']
             entryBody = {
                 "cuisine": entry['NewImage']['cuisine']['S'],
-                "id": entry['NewImage']['id']['S']
+                "id": entry['NewImage']['id']['S'],
+                "city": entry['NewImage']['city']['S']
             }
             index = "restaurants"
             type = "restaurant"

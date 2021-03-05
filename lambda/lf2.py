@@ -5,8 +5,8 @@ import boto3
 import random
 
 
-def getRestaurantIdGivenCuisine(cuisine):
-    host = 'search-elastic-yelp-final-hunkmkikl3kafz5esv3cu6v5tu.us-east-1.es.amazonaws.com'  
+def getRestaurantIdGivenCuisine(recommendationRequest):
+    host = 'search-elastic-yelp-final-hunkmkikl3kafz5esv3cu6v5tu.us-east-1.es.amazonaws.com'  # For example, my-test-domain.us-east-1.es.amazonaws.com
     region = 'us-east-1'  # e.g. us-west-1
 
     service = 'es'
@@ -20,9 +20,21 @@ def getRestaurantIdGivenCuisine(cuisine):
         verify_certs=True,
         connection_class=RequestsHttpConnection
     )
-
-    response = es.search(index="restaurants", doc_type="restaurant",
-                         body={"query": {"match": {"cuisine": cuisine.lower()}}})
+    searchBody = {
+        "query": {
+            "bool": {
+                "must": [{
+                    "match": {
+                        "cuisine": recommendationRequest['Cuisine'].lower()
+                    }},
+                    {"match": {
+                        "city": recommendationRequest['Location'].title()
+                    }}
+                ]
+            }
+        }
+    }
+    response = es.search(index="restaurants", doc_type="restaurant", body=searchBody)
     random.seed()
     print(response)
     total = response['hits']['total']['value']
@@ -58,7 +70,7 @@ def lambda_handler(event, context):
     recommendationRequest = event['Records'][0]['body']
     if isinstance(recommendationRequest, str):
         recommendationRequest = json.loads(recommendationRequest)
-    id = getRestaurantIdGivenCuisine(recommendationRequest['Cuisine'])
+    id = getRestaurantIdGivenCuisine(recommendationRequest)
     restaurant = getRestaurantGivenId(id)
     response = sendTextMessage(restaurant, recommendationRequest)
     # message = json.loads(event['Records'][0]['Sns']['Message'])
